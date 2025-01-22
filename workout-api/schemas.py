@@ -1,12 +1,17 @@
 from pydantic import BaseModel
 from typing import Optional
 
-class APIResponse(BaseModel):
+class ApiResponse(BaseModel):
     status: bool
     message: str
     data: dict
 
-class APIErrorResponse(BaseModel):
+class CreatedResponse(BaseModel):
+    status: bool
+    message: str
+    data: int
+
+class ApiErrorResponse(BaseModel):
     status: bool
     message: str
     error: str

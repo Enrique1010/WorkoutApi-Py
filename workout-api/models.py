@@ -29,7 +29,7 @@ class User(Base):
     age: Mapped[int] = mapped_column(Integer)
     email: Mapped[str] = mapped_column(String, unique=True)
     password: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
-    created_at: Mapped[int] = mapped_column(String)
+    created_at: Mapped[int] = mapped_column(Integer, nullable=False)
 
     def __repr__(self):
         return f"User(name={self.name!r}, age={self.age!r}) email={self.email!r}) created_at={self.created_at!r})"
@@ -66,7 +66,7 @@ class Exercise(Base):
     exercise_type: Mapped[str] = mapped_column(String)
     duration: Mapped[int] = mapped_column(Integer)
     calories: Mapped[int] = mapped_column(Integer)
-    created_at: Mapped[int] = mapped_column(String)
+    created_at: Mapped[int] = mapped_column(Integer)
 
     workout_id: Mapped[int] = mapped_column(Integer, ForeignKey("workout.id"))
     workout: Mapped["Workout"] = relationship(back_populates="exercises")

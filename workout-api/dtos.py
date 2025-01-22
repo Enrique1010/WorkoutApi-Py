@@ -1,5 +1,5 @@
 from typing import Optional, Union
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, ConfigDict
 from crypto import hash_password
 
 

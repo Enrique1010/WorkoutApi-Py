@@ -53,7 +53,7 @@ async def user_login(user_credentials: dict, db: AsyncSession):
     query = sa.select(User).where(User.email == user_credentials.email)
     result = await db.execute(query)
     user = result.scalar()
-    if user is None or not verify_password(user_credentials.password, user.password):
+    if user is None or not verify_password(user_credentials['password'], user.password):
         raise HTTPException(status_code=403, detail=ERROR_403)
 
     access_token = create_access_token(data={"user_id": user.id})
