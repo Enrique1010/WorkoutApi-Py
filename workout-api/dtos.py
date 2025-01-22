@@ -6,8 +6,9 @@ from crypto import hash_password
 class UserBase(BaseModel):
     name: Optional[str]
     age: Optional[int]
+    username: Optional[str] = None
     email: Optional[str] = None
-    password: Optional[Union[str, bytes]] = None
+    password: Optional[str] = None
 
     @field_validator('password', mode='before')
     def hash_password(cls, value: Optional[str]) -> Optional[bytes]:
@@ -19,8 +20,9 @@ class UserBase(BaseModel):
 class CreateUserDTO(UserBase):
     name: str
     age: int
+    username: str
     email: str
-    password: Union[str, bytes]
+    password: str
 
 
 class UpdateUserDTO(UserBase):
