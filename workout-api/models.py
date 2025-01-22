@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import Integer, String, Enum, LargeBinary, ForeignKey, Boolean
+from sqlalchemy import Integer, String, Enum, ForeignKey, Boolean, Float
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -50,7 +50,7 @@ class Workout(Base):
     created_at: Mapped[int] = mapped_column(Integer)
     is_schedule: Mapped[bool] = mapped_column(Boolean, insert_default=False)
     schedule_date: Mapped[int] = mapped_column(Integer)
-    exercises: Mapped[list["Exercise"]] = relationship(back_populates="workout")
+    exercises: Mapped[list["Exercise"]] = relationship(back_populates="workout", lazy="selectin")
 
     def __repr__(self):
         return f"Workout(user_id={self.user_id!r}, workout_type={self.workout_type!r}) duration={self.duration!r}) calories={self.calories!r}) created_at={self.created_at!r})"
@@ -74,3 +74,46 @@ class Exercise(Base):
 
     def __repr__(self):
         return f"Exercise(name={self.name!r}, exercise_type={self.exercise_type!r}) duration={self.duration!r}) calories={self.calories!r}) created_at={self.created_at!r})"
+
+
+class TrackingData(Base):
+    """
+    Tracking data model
+    """
+    __tablename__ = "tracking_data"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    description: Mapped[str] = mapped_column(String)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("user.id"))
+    exercise_id: Mapped[int] = mapped_column(Integer, ForeignKey("exercise.id"))
+    duration: Mapped[int] = mapped_column(Integer, nullable=False)
+    is_new_set: Mapped[bool] = mapped_column(Boolean, insert_default=True)
+    is_new_record: Mapped[bool] = mapped_column(Boolean, insert_default=False)
+    distance_covered: Mapped[int] = mapped_column(Integer) # if applicable
+    created_at: Mapped[int] = mapped_column(Integer)
+    last_updated_at: Mapped[int] = mapped_column(Integer)
+
+    route: Mapped[list["MapPoint"]] = relationship(back_populates="tracking_data") # if applicable
+
+    def __repr__(self):
+        return f"TrackingData(user_id={self.user_id!r}, exercise_id={self.exercise_id!r}) created_at={self.created_at!r})"
+
+
+class MapPoint(Base):
+    """
+    MapPoint model
+    """
+    __tablename__ = "map_point"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    exercise_id: Mapped[int] = mapped_column(Integer, ForeignKey("exercise.id"))
+    lat: Mapped[float] = mapped_column(Float)
+    lon: Mapped[float] = mapped_column(Float)
+    created_at: Mapped[int] = mapped_column(Integer)
+    last_updated_at: Mapped[int] = mapped_column(Integer)
+
+    tracking_data_id: Mapped[int] = mapped_column(Integer, ForeignKey("tracking_data.id"))
+    tracking_data: Mapped["TrackingData"] = relationship(back_populates="route")
+
+    def __repr__(self):
+        return f"MapPoint(id={self.id!r}, exercise_id={self.exercise_id!r}) created_at={self.created_at!r})"

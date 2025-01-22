@@ -27,3 +27,23 @@ class CreateUserDTO(UserBase):
 
 class UpdateUserDTO(UserBase):
     pass
+
+
+class WorkoutBase(BaseModel):
+    user_id: Optional[int] = None
+    workout_type: Optional[str] = None
+    duration: Optional[int] = None
+    calories: Optional[int] = None
+    is_schedule: Optional[bool] = False
+    schedule_date: Optional[int] = None
+
+
+class CreateWorkoutDTO(WorkoutBase):
+    user_id: int
+    workout_type: str
+    duration: int
+    calories: int
+
+
+class UpdateWorkoutDTO(WorkoutBase):
+    pass

@@ -34,7 +34,7 @@ def verify_access_token(access_token, credentials_exception):
     Function to verify the access token.
     """
     try:
-        payload = jwt.decode(key=SECRET_KEY, token=access_token, algorithms=[ALGORITHM])
+        payload = jwt.decode(key=SECRET_KEY, jwt=access_token, algorithms=[ALGORITHM])
         user_id: int = payload.get("user_id")
 
         if user_id is None:
@@ -44,7 +44,7 @@ def verify_access_token(access_token, credentials_exception):
     except PyJWTError as error:
         raise credentials_exception from error
 
-    return token_data.id, token_data.role
+    return token_data.id
 
 
 def get_current_user(access_token: str = Depends(oauth2_scheme)):
@@ -55,6 +55,5 @@ def get_current_user(access_token: str = Depends(oauth2_scheme)):
                                           detail='Could not validate credentials.',
                                           headers={"WWW-Authenticate": "Bearer"})
 
-    user_id, user_role = verify_access_token(access_token,
-                                             credentials_exception=credentials_exception)
-    return user_id, user_role
+    user_id = verify_access_token(access_token, credentials_exception=credentials_exception)
+    return user_id
