@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 
 from dtos import UpdateWorkoutDTO, CreateWorkoutDTO
 from repository.auth import get_current_user
-from repository.workouts import create_new_workout, update_workout, get_workouts, get_workout
+from repository.workouts import create_new_workout, update_workout, get_workouts, get_workout, delete_workout
 from routers.utils import get_db, AsyncSession
 
 router = APIRouter()
@@ -74,3 +74,17 @@ async def get(workout_id: int, db: AsyncSession = Depends(get_db), user_id: int 
     """
     workout = await get_workout(db=db, workout_id=workout_id, user_id=user_id)
     return workout
+
+
+@router.delete("/{workout_id}")
+async def delete(workout_id: int, db: AsyncSession = Depends(get_db), user_id: int = Depends(get_current_user_id)):
+    """
+    Function to delete a workout.
+    Args:
+        workout_id:
+        user_id:
+        db:
+
+    Returns: The deleted workout info.
+    """
+    return await delete_workout(workout_id=workout_id, user_id=user_id, db=db)

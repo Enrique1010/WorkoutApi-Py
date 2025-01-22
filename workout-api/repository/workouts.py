@@ -138,3 +138,28 @@ async def get_workout(db: AsyncSession, workout_id: int, user_id: int):
     }
 
     return mapped_workout
+
+
+@handle_errors
+async def delete_workout(db: AsyncSession, workout_id: int, user_id: int):
+    """
+    Function to delete a workout from the "workouts" table.
+
+    Returns:
+        The deleted_workout info.
+    """
+    query = sa.select(Workout).where(Workout.id == workout_id)
+    result = await db.execute(query)
+    existing_workout = result.scalar()
+
+    if not existing_workout:
+        raise HTTPException(status_code=404, detail='Workout not found.')
+
+    if existing_workout.user_id != user_id:
+        raise HTTPException(status_code=401, detail=ERROR_401)
+
+    delete_query = sa.delete(Workout).where(Workout.id == workout_id)
+    await db.execute(delete_query)
+    await db.commit()
+    return {'status': 'success',
+            'message': f'Workout {workout_id} deleted successfully.' }
