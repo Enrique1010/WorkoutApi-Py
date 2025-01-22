@@ -96,3 +96,21 @@ async def update_user(user_id: int, requester_id, user_data: UpdateUserDTO, db: 
     await db.commit()
     await db.refresh(modified_user)
     return modified_user
+
+
+@handle_errors
+async def get_user(user_id: int, db: AsyncSession):
+    """
+    Function to get a user by ID.
+
+    Returns:
+        The user info.
+    """
+    query = sa.select(User).where(User.id == user_id)
+    result = await db.execute(query)
+    user = result.scalar()
+
+    if user is None:
+        raise HTTPException(status_code=404, detail=f'User with ID {user_id} not found.')
+
+    return user

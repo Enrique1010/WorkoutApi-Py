@@ -29,6 +29,14 @@ class UpdateUserDTO(UserBase):
     pass
 
 
+class GetUserDTO(UserBase):
+    id: int
+    name: str
+    age: int
+    username: str
+    email: str
+
+
 class WorkoutBase(BaseModel):
     user_id: Optional[int] = None
     workout_type: Optional[str] = None
