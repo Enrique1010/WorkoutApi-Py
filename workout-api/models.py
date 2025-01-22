@@ -84,7 +84,6 @@ class TrackingData(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     description: Mapped[str] = mapped_column(String)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("user.id"))
     exercise_id: Mapped[int] = mapped_column(Integer, ForeignKey("exercise.id"))
     duration: Mapped[int] = mapped_column(Integer, nullable=False)
     is_new_set: Mapped[bool] = mapped_column(Boolean, insert_default=True)
@@ -106,7 +105,6 @@ class MapPoint(Base):
     __tablename__ = "map_point"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    exercise_id: Mapped[int] = mapped_column(Integer, ForeignKey("exercise.id"))
     lat: Mapped[float] = mapped_column(Float)
     lon: Mapped[float] = mapped_column(Float)
     created_at: Mapped[int] = mapped_column(Integer)
@@ -116,4 +114,4 @@ class MapPoint(Base):
     tracking_data: Mapped["TrackingData"] = relationship(back_populates="route")
 
     def __repr__(self):
-        return f"MapPoint(id={self.id!r}, exercise_id={self.exercise_id!r}) created_at={self.created_at!r})"
+        return f"MapPoint(id={self.id!r}, created_at={self.created_at!r})"

@@ -1,11 +1,16 @@
 from fastapi import APIRouter, Depends
+from fastapi.websockets import WebSocketDisconnect, WebSocket
 
-from dtos import CreateExerciseDTO, UpdateExerciseDTO
-from repository.exercise import create_new_exercise, get_exercise, get_exercises, update_exercise, delete_exercise
-from routers.utils import get_db, AsyncSession
+from dtos import CreateExerciseDTO, UpdateExerciseDTO, CreateTrackingRoomDTO
 from repository.auth import get_current_user
+from repository.exercise import create_new_exercise, get_exercise, get_exercises, update_exercise, delete_exercise, \
+    get_exercise_tracking_data_list, create_exercise_tracking_data_room, update_exercise_tracking_data, \
+    create_map_point, get_exercise_tracking_data_updates
+from repository.utils import tracking_ws_handler
+from routers.utils import get_db, AsyncSession
 
 router = APIRouter()
+
 
 async def get_current_user_id(current_user_id: int = Depends(get_current_user)):
     """
@@ -20,7 +25,7 @@ async def get_current_user_id(current_user_id: int = Depends(get_current_user)):
 
 @router.post("/create", status_code=201)
 async def post(exercise_data: CreateExerciseDTO, db: AsyncSession = Depends(get_db),
-                             user_id: int = Depends(get_current_user_id)):
+               user_id: int = Depends(get_current_user_id)):
     """
     Function to create a new exercise.
     Args:
@@ -36,7 +41,7 @@ async def post(exercise_data: CreateExerciseDTO, db: AsyncSession = Depends(get_
 
 @router.patch("/{exercise_id}", status_code=200)
 async def update(exercise_data: UpdateExerciseDTO, db: AsyncSession = Depends(get_db),
-                user_id: int = Depends(get_current_user_id), exercise_id: int = None):
+                 user_id: int = Depends(get_current_user_id), exercise_id: int = None):
     """
     Function to update an exercise.
     Args:
@@ -92,7 +97,90 @@ async def delete(exercise_id: int, db: AsyncSession = Depends(get_db),
     return await delete_exercise(db=db, user_id=user_id, exercise_id=exercise_id)
 
 
+"""
+Websockets operations and tracking endpoints
+"""
+
+
+@router.post("/tracking/{exercise_id}", status_code=201)
+async def post_tracking(tracking_data: CreateTrackingRoomDTO, exercise_id: int, db: AsyncSession = Depends(get_db),
+                        user_id: int = Depends(get_current_user_id)):
+    """
+    Function to create a new exercise tracking.
+    Args:
+        tracking_data:
+        exercise_id:
+        db:
+        user_id:
+
+    Returns: The new exercise tracking info.
+
+    """
+    tracking_data_dump = tracking_data.model_dump()
+    return await create_exercise_tracking_data_room(exercise_id=exercise_id, user_id=user_id,
+                                                    tracking_data=tracking_data_dump, db=db)
+
+
+@router.get("/tracking/list/{exercise_id}", status_code=200)
+async def get_tracking(exercise_id: int, db: AsyncSession = Depends(get_db),
+                       user_id: int = Depends(get_current_user_id)):
+    """
+    Function to get all exercise tracking.
+    Args:
+        exercise_id:
+        db:
+        user_id:
+
+    Returns: All exercise tracking.
+
+    """
+    return await get_exercise_tracking_data_list(db=db, user_id=user_id, exercise_id=exercise_id)
+
+
 # websockets operations
-@router.websocket("/ws/update_tracking")
-async def start_tracking():
-    pass
+@router.websocket("/ws/tracking/{tracking_data_id}")
+async def start_tracking(websocket: WebSocket, tracking_data_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Function to start the tracking of an exercise.
+    Args:
+        tracking_data_id:
+        websocket:
+        db:
+
+    Returns: The tracking status.
+
+    """
+    """room_exists = await verify_if_tracking_room_exists(exercise_id=exercise_id, user_id=user_id, db=db)
+
+    if not room_exists:
+        return {"status": False, "message": "The tracking room does not exist."}"""
+
+    websocket_handler = tracking_ws_handler
+    await websocket_handler.connect(websocket=websocket)
+    await websocket_handler.broadcast({"status": True, "message": "The tracking has started."})
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+            # this is the data that the client sends to the server every time the user moves
+            response = await create_map_point(map_point=data['map_point'], tracking_data_id=tracking_data_id, db=db)
+
+            if data['update_tracking_data'] is True:
+                # if the user wants to update the tracking data every x seconds
+                update_response = await update_exercise_tracking_data(data=data['updated_tracking_data'],
+                                                                      tracking_data_id=response['data'], db=db)
+            else:
+                update_response = None
+
+            if update_response['status']:
+                await websocket_handler.broadcast({"status": True, "message": "The tracking data has been updated."})
+                tracking_updates = await get_exercise_tracking_data_updates(tracking_data_id=response['data'], db=db)
+                await websocket_handler.broadcast(tracking_updates)
+            else:
+                await websocket_handler.broadcast(
+                    {"status": False, "message": "The tracking data has not been updated."})
+
+    except WebSocketDisconnect:
+        await websocket_handler.broadcast({"status": False, "message": "The tracking has stopped."})
+        await websocket_handler.disconnect(websocket=websocket)
+        return {"status": True, "message": "The tracking has stopped."}

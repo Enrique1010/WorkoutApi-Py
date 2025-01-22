@@ -13,7 +13,7 @@ from repository.utils import handle_errors, get_current_time
 
 ERROR_401 = 'You are not authorized to perform this action.'
 
-async def verify_user_id(user_id: int, workout_id: int, db: AsyncSession):
+async def verify_if_user_is_valid(user_id: int, workout_id: int, db: AsyncSession):
     """
     Function to verify the user_id of the exercise.
 
@@ -47,6 +47,21 @@ async def verify_if_exercise_exists(exercise_id: int, db: AsyncSession):
     return exercise.workout_id
 
 
+async def get_user_id_by_exercise_id(exercise_id: int, db: AsyncSession):
+    """
+    Function to get the user_id by exercise_id.
+
+    Returns:
+        The user_id of the exercise.
+    """
+    query = sa.select(Exercise).where(Exercise.id == exercise_id)
+    result = await db.execute(query)
+    exercise = result.scalar()
+    if not exercise:
+        raise HTTPException(status_code=404, detail='Exercise not found.')
+    return exercise.workout.user_id
+
+
 @handle_errors
 async def create_new_exercise(exercise_data: dict, user_id: int, db: AsyncSession):
     """
@@ -57,7 +72,7 @@ async def create_new_exercise(exercise_data: dict, user_id: int, db: AsyncSessio
     """
     # compare workout user_id with the current user_id
     workout_id = exercise_data['workout_id']
-    await verify_user_id(user_id, workout_id, db)
+    await verify_if_user_is_valid(user_id, workout_id, db)
 
     creation_date = get_current_time()
     exercise_data.update({"created_at": creation_date})
@@ -90,7 +105,7 @@ async def update_exercise(exercise_id: int, exercise_data: dict, user_id: int, d
     if not exercise:
         raise HTTPException(status_code=404, detail='Exercise not found.')
 
-    await verify_user_id(user_id, exercise.workout_id, db)
+    await verify_if_user_is_valid(user_id, exercise.workout_id, db)
 
     update_query = sa.update(Exercise).where(Exercise.id == exercise_id).values(**exercise_data)
     await db.execute(update_query)
@@ -108,7 +123,7 @@ async def get_exercises(db: AsyncSession, user_id: int, workout_id: int):
     Returns:
         All exercises.
     """
-    await verify_user_id(user_id, workout_id, db)
+    await verify_if_user_is_valid(user_id, workout_id, db)
 
     query = sa.select(Exercise).where(Exercise.workout_id == workout_id)
     result = await db.execute(query)
@@ -136,7 +151,7 @@ async def get_exercise(db: AsyncSession, user_id: int, exercise_id: int):
     if not exercise:
         raise HTTPException(status_code=404, detail='Exercise not found.')
 
-    await verify_user_id(user_id, exercise.workout_id, db)
+    await verify_if_user_is_valid(user_id, exercise.workout_id, db)
 
     return {
         'status': 'success',
@@ -158,7 +173,7 @@ async def delete_exercise(db: AsyncSession, user_id: int, exercise_id: int):
     if not exercise_to_delete:
         raise HTTPException(status_code=404, detail='Exercise not found.')
 
-    await verify_user_id(user_id, exercise_to_delete.workout_id, db)
+    await verify_if_user_is_valid(user_id, exercise_to_delete.workout_id, db)
 
     await db.delete(exercise_to_delete)
     await db.commit()
@@ -177,10 +192,11 @@ async def create_exercise_tracking_data_room(db: AsyncSession, user_id: int, exe
     """
     workout_id = await verify_if_exercise_exists(exercise_id, db)
 
-    await verify_user_id(user_id, workout_id, db)
+    await verify_if_user_is_valid(user_id, workout_id, db)
 
     creation_date = get_current_time()
     tracking_data.update({"created_at": creation_date})
+    tracking_data.update({"last_updated_at": creation_date})
     tracking_data.update({"exercise_id": exercise_id})
 
     new_tracking_data = TrackingData(**tracking_data)
@@ -190,9 +206,9 @@ async def create_exercise_tracking_data_room(db: AsyncSession, user_id: int, exe
     result = await db.execute(query)
     tracking_data_id = result.scalar()
     await db.commit()
+
     return {'status': 'success',
-            'message': f'Tracking data {tracking_data_id} added successfully.',
-            'data': tracking_data_id }
+            'message': f'Tracking data {tracking_data_id} added successfully.'}
 
 
 @handle_errors
@@ -212,13 +228,55 @@ async def get_exercise_tracking_data_list(db: AsyncSession, user_id: int, exerci
 
     workout_id = await verify_if_exercise_exists(exercise_id, db)
 
-    await verify_user_id(user_id, workout_id, db)
+    await verify_if_user_is_valid(user_id, workout_id, db)
 
-    return tracking_data
+    mapped_data = [
+        {
+            "id": track.id,
+            "description": track.description,
+            "exercise_id": track.exercise_id,
+            "duration": track.duration,
+            "distance_covered": track.distance_covered,
+            "created_at": track.created_at
+        }
+        for track in tracking_data
+    ]
+
+    return {
+        'status': 'success',
+        'data': mapped_data
+    }
 
 
 @handle_errors
-async def get_exercise_tracking_data_updates(db: AsyncSession, user_id: int, tracking_data_id: int):
+async def verify_if_tracking_room_exists(db: AsyncSession, user_id: int, tracking_data_id: int):
+    """
+    Function to verify if the tracking room exists.
+
+    Returns:
+        The tracking room info.
+    """
+    query = sa.select(TrackingData).where(TrackingData.id == tracking_data_id)
+    result = await db.execute(query)
+    tracking_data = result.scalar()
+
+    if not tracking_data:
+        raise HTTPException(status_code=404, detail='Tracking data not found.')
+
+    workout_id = await verify_if_exercise_exists(tracking_data.exercise_id, db)
+
+    await verify_if_user_is_valid(user_id, workout_id, db)
+
+    if tracking_data:
+        exists = True
+    else:
+        exists = False
+
+    return exists
+
+
+@handle_errors
+async def get_exercise_tracking_data_updates(db: AsyncSession, tracking_data_id: int):
     """
     Function to get an exercise tracking data from the "tracking_data" table.
 
@@ -236,20 +294,12 @@ async def get_exercise_tracking_data_updates(db: AsyncSession, user_id: int, tra
     if not tracking_data:
         raise HTTPException(status_code=404, detail='Tracking data not found.')
 
-    workout_id = await verify_if_exercise_exists(tracking_data.exercise_id, db)
-
-    await verify_user_id(user_id, workout_id, db)
-
     mapped_tracking_data = {
         "id": tracking_data.id,
-        "description": tracking_data.description,
-        "user_id": tracking_data.user_id,
-        "exercise_id": tracking_data.exercise_id,
         "duration": tracking_data.duration,
         "is_new_set": tracking_data.is_new_set,
         "is_new_record": tracking_data.is_new_record,
         "distance_covered": tracking_data.distance_covered,
-        "created_at": tracking_data.created_at,
         "last_updated_at": tracking_data.last_updated_at,
         "route": [
             {
@@ -266,15 +316,38 @@ async def get_exercise_tracking_data_updates(db: AsyncSession, user_id: int, tra
 
 
 @handle_errors
-async def update_exercise_tracking_data(db: AsyncSession, user_id: int, tracking_data_id: int,
-                                        tracking_data: dict, map_point: dict):
+async def create_map_point(db: AsyncSession, tracking_data_id: int, map_point: dict):
+    """
+    Function to create a new map point in the "map_point" table.
+
+    Returns:
+        The new map_point info.
+    """
+    map_point.update({"tracking_data_id": tracking_data_id})
+    map_point.update({"created_at": get_current_time()})
+    map_point.update({"last_updated_at": get_current_time()})
+
+    new_map_point = MapPoint(**map_point)
+
+    db.add(new_map_point)
+    query = sa.select(MapPoint.id).order_by(MapPoint.id.desc()).limit(1)
+    result = await db.execute(query)
+    map_point_id = result.scalar()
+    await db.commit()
+
+    return {'status': 'success',
+            'message': f'Map point {map_point_id} added successfully.',
+            'data': map_point_id }
+
+
+@handle_errors
+async def update_exercise_tracking_data(db: AsyncSession, tracking_data_id: int, tracking_data: dict):
     """
     Function to update an exercise tracking data in the "tracking_data" table.
 
     Returns:
         The updated tracking_data info.
     """
-    global map_point_id
     query = sa.select(TrackingData).where(TrackingData.id == tracking_data_id)
     result = await db.execute(query)
     existing_tracking_data = result.scalar()
@@ -282,29 +355,10 @@ async def update_exercise_tracking_data(db: AsyncSession, user_id: int, tracking
     if not existing_tracking_data:
         raise HTTPException(status_code=404, detail='Tracking data not found.')
 
-    workout_id = await verify_if_exercise_exists(existing_tracking_data.exercise_id, db)
-
-    await verify_user_id(user_id, workout_id, db)
-
-    map_point.update({"tracking_data_id": tracking_data_id})
-
-    new_map_point = MapPoint(**map_point)
-
-    if map_point:
-        db.add(new_map_point)
-        query = sa.select(MapPoint.id).order_by(MapPoint.id.desc()).limit(1)
-        result = await db.execute(query)
-        map_point_id = result.scalar()
-
-
     update_query = sa.update(TrackingData).where(TrackingData.id == tracking_data_id).values(**tracking_data)
     await db.execute(update_query)
     await db.commit()
 
-    if map_point:
-        return { 'status': 'success',
-                 'message': f'Tracking data {tracking_data_id} with location {map_point_id} updated successfully.'}
-    else:
-        return {'status': 'success',
+    return {'status': True,
             'message': f'Tracking data {tracking_data_id} updated successfully.' }
 

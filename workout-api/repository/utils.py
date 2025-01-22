@@ -1,9 +1,10 @@
 import logging
-
 from datetime import datetime
 from functools import wraps
-from sqlalchemy.exc import SQLAlchemyError
+
 from fastapi import HTTPException
+from sqlalchemy.exc import SQLAlchemyError
+from fastapi.websockets import WebSocket
 
 
 def get_current_time():
@@ -42,3 +43,43 @@ def handle_errors(func):
             await db.close()
 
     return wrapper
+
+
+class WebsocketTrackingHandler:
+    """
+    Class to handle the websocket tracking.
+    """
+
+    def __init__(self):
+        self.active_connections = []
+
+    async def connect(self, websocket):
+        """
+        Function to connect to the websocket.
+        """
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    async def disconnect(self, websocket):
+        """
+        Function to disconnect from the websocket.
+        """
+        await websocket.close()
+        self.active_connections.remove(websocket)
+
+    @staticmethod
+    async def send_message(data, websocket: WebSocket):
+        """
+        Function to send a message to the websocket.
+        """
+        await websocket.send_json(data)
+
+    async def broadcast(self, data):
+        """
+        Function to broadcast data to all websockets.
+        """
+        for connection in self.active_connections:
+            await connection.send_json(data)
+
+
+tracking_ws_handler = WebsocketTrackingHandler()

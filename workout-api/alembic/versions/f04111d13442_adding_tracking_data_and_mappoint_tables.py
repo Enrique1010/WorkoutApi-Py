@@ -23,7 +23,6 @@ def upgrade() -> None:
     op.create_table('tracking_data',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('description', sa.String(), nullable=True),
-    sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('exercise_id', sa.Integer(), nullable=False),
     sa.Column('duration', sa.Integer(), nullable=False),
     sa.Column('is_new_set', sa.Boolean(), nullable=False),
@@ -32,18 +31,15 @@ def upgrade() -> None:
     sa.Column('created_at', sa.Integer(), nullable=False),
     sa.Column('last_updated_at', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['exercise_id'], ['exercise.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('map_point',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('exercise_id', sa.Integer(), nullable=False),
     sa.Column('tracking_data_id', sa.Integer(), nullable=False),
     sa.Column('lat', sa.Float(), nullable=False),
     sa.Column('lon', sa.Float(), nullable=False),
     sa.Column('created_at', sa.Integer(), nullable=False),
     sa.Column('last_updated_at', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['exercise_id'], ['exercise.id'], ),
     sa.ForeignKeyConstraint(['tracking_data_id'], ['tracking_data.id'], ),
     sa.PrimaryKeyConstraint('id')
     )

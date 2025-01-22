@@ -82,3 +82,48 @@ class UpdateExerciseDTO(ExerciseBase):
     exercise_type: str | None = None
     duration: int | None = None
     calories: int | None = None
+
+
+class TrackingBase(BaseModel):
+    id: Optional[int] = None
+    user_id: Optional[int] = None
+    exercise_id: Optional[int] = None
+    duration: Optional[int] = None
+    description: Optional[str] = None
+    is_new_set: Optional[bool] = False
+    is_new_record: Optional[bool] = False
+    distance_covered: Optional[int] = None
+
+
+class CreateTrackingRoomDTO(TrackingBase):
+    user_id: int
+    exercise_id: int
+    duration: int
+    description: str
+
+
+class UpdateTrackingRoomDTO(TrackingBase):
+    duration: int | None = None
+    description: str | None = None
+
+
+class UpdateTrackingDataDTO(TrackingBase):
+    duration: int | None = None
+    is_new_set: bool | None = None
+    is_new_record: bool | None = None
+    distance_covered: int | None = None
+
+class MapPointBase(BaseModel):
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+
+class CreateMapPointDTO(MapPointBase):
+    latitude: float
+    longitude: float
+
+
+class UpdateMapPointDTO(MapPointBase):
+    latitude: float | None = None
+    longitude: float | None = None
+    update_tracking_data: bool | None = False # from the client side, if the user wants to update every x seconds
