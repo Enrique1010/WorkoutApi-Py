@@ -150,10 +150,6 @@ async def start_tracking(websocket: WebSocket, tracking_data_id: int, db: AsyncS
     Returns: The tracking status.
 
     """
-    """room_exists = await verify_if_tracking_room_exists(exercise_id=exercise_id, user_id=user_id, db=db)
-
-    if not room_exists:
-        return {"status": False, "message": "The tracking room does not exist."}"""
 
     websocket_handler = tracking_ws_handler
     await websocket_handler.connect(websocket=websocket)
