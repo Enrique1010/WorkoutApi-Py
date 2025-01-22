@@ -8,7 +8,7 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from models import Workout, Exercise
+from models import Workout
 from repository.utils import handle_errors, get_current_time
 
 ERROR_401 = 'You are not authorized to perform this action.'

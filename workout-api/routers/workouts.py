@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends
 
 from dtos import UpdateWorkoutDTO, CreateWorkoutDTO
+from repository.auth import get_current_user
 from repository.workouts import create_new_workout, update_workout, get_workouts, get_workout
 from routers.utils import get_db, AsyncSession
-from repository.auth import get_current_user
 
 router = APIRouter()
+
 
 async def get_current_user_id(current_user_id: int = Depends(get_current_user)):
     """
@@ -20,7 +21,7 @@ async def get_current_user_id(current_user_id: int = Depends(get_current_user)):
 
 @router.post("/create", status_code=201)
 async def post(workout_data: CreateWorkoutDTO, db: AsyncSession = Depends(get_db),
-                             user_id: int = Depends(get_current_user_id)):
+               user_id: int = Depends(get_current_user_id)):
     """
     Function to create a new workout.
     Args:
@@ -36,7 +37,7 @@ async def post(workout_data: CreateWorkoutDTO, db: AsyncSession = Depends(get_db
 
 @router.put("/update")
 async def update(workout_data: UpdateWorkoutDTO, db: AsyncSession = Depends(get_db),
-                         user_id: int = Depends(get_current_user_id)):
+                 user_id: int = Depends(get_current_user_id)):
     """
     Function to update a workout.
     Args:
