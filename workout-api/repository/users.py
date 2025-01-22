@@ -30,7 +30,7 @@ async def crud_create_new_user(user_data: dict, db: AsyncSession):
     user_data['created_at'] = creation_date
     new_user = User(**user_data)
 
-    query = sa.select(User).where((User.email == user_data['email']))
+    query = sa.select(User).where((User.email == user_data['username']))
     result = await db.execute(query)
     user_exists = result.scalars().first()
     if user_exists:
@@ -50,10 +50,10 @@ async def user_login(user_credentials: dict, db: AsyncSession):
     Returns:
         A unique token for the user (if auth is successful).
     """
-    query = sa.select(User).where(User.email == user_credentials.email)
+    query = sa.select(User).where(User.username == user_credentials.username)
     result = await db.execute(query)
     user = result.scalar()
-    if user is None or not verify_password(user_credentials['password'], user.password):
+    if user is None or not verify_password(user_credentials.password, user.password):
         raise HTTPException(status_code=403, detail=ERROR_403)
 
     access_token = create_access_token(data={"user_id": user.id})
@@ -61,8 +61,7 @@ async def user_login(user_credentials: dict, db: AsyncSession):
 
 
 @handle_errors
-async def crud_update_user(user_id: int, requester_id, requester_role,
-                           user_data: UpdateUserDTO, db: AsyncSession):
+async def update_user(user_id: int, requester_id, user_data: UpdateUserDTO, db: AsyncSession):
     """
     Function to update an existing user by ID.
 
@@ -74,7 +73,7 @@ async def crud_update_user(user_id: int, requester_id, requester_role,
     modified_user = result.scalar()
     if modified_user is None:
         raise HTTPException(status_code=404, detail=f'User with ID {user_id} not found.')
-    if modified_user.id != requester_id and requester_role != 'admin':
+    if modified_user.id != requester_id:
         raise HTTPException(status_code=401, detail=ERROR_401)
 
     query_all = await db.execute(sa.select(User))

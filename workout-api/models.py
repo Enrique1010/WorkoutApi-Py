@@ -27,8 +27,9 @@ class User(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String)
     age: Mapped[int] = mapped_column(Integer)
+    username: Mapped[str] = mapped_column(String, unique=True)
     email: Mapped[str] = mapped_column(String, unique=True)
-    password: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    password: Mapped[bytes] = mapped_column(String(255), nullable=False)
     created_at: Mapped[int] = mapped_column(Integer, nullable=False)
 
     def __repr__(self):

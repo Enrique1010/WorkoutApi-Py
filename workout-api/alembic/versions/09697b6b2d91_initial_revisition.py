@@ -1,8 +1,8 @@
 """Initial revisition
 
-Revision ID: 3895ea19cbdf
+Revision ID: 09697b6b2d91
 Revises: 
-Create Date: 2025-01-16 18:32:21.458866
+Create Date: 2025-01-16 22:15:24.457212
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '3895ea19cbdf'
+revision: str = '09697b6b2d91'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,13 +24,14 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=30), nullable=False),
     sa.Column('age', sa.Integer(), nullable=False),
+    sa.Column('username', sa.String(), nullable=False),
     sa.Column('email', sa.String(length=100), nullable=False),
     sa.Column('password', sa.String(255), nullable=False),
     sa.Column('created_at', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('email')
+    sa.UniqueConstraint('email'),
+    sa.UniqueConstraint('username')
     )
-
     workout_type = sa.Enum('CARDIO', 'STRENGTH', 'FLEXIBILITY', 'BALANCE', name='exercisetype')
 
     op.create_table('workout',
@@ -51,7 +52,7 @@ def upgrade() -> None:
     sa.Column('exercise_type', sa.String(), nullable=False),
     sa.Column('duration', sa.Integer(), nullable=False),
     sa.Column('calories', sa.Integer(), nullable=False),
-    sa.Column('created_at', sa.String(), nullable=False),
+    sa.Column('created_at', sa.Integer(), nullable=False),
     sa.Column('workout_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['workout_id'], ['workout.id'], ),
     sa.PrimaryKeyConstraint('id')
