@@ -51,12 +51,13 @@ async def update_workout(workout_data: dict, user_id: int, db: AsyncSession):
     workout_id = workout_data.get('id')
     query = sa.select(Workout).where(Workout.id == workout_id)
     result = await db.execute(query)
-    workout = result.scalar()
-    if not workout:
+    existing_workout = result.scalar()
+
+    if not existing_workout:
         raise HTTPException(status_code=404, detail='Workout not found.')
 
-    for key, value in workout_data.items():
-        setattr(workout, key, value)
+    update_query = sa.update(Workout).where(Workout.id == workout_id).values(**workout_data)
+    await db.execute(update_query)
 
     await db.commit()
     return {'status': 'success',
