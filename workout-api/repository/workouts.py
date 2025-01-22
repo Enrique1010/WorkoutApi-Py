@@ -21,7 +21,7 @@ async def create_new_workout(workout_data: dict, user_id: int, db: AsyncSession)
     Function to add a new workout into the "workouts" table.
 
     Returns:
-        The new_workout info.
+        The success message with the workout id.
     """
     creation_date = get_current_time()
     workout_data.update({"created_at": creation_date})
@@ -41,17 +41,16 @@ async def create_new_workout(workout_data: dict, user_id: int, db: AsyncSession)
         raise HTTPException(status_code=400, detail='Invalid workout type or invalid data provided.')
 
     return {'status': 'success',
-            'message': f'Workout {workout_id} added successfully.',
-            'data': workout_id}
+            'message': f'Workout {workout_id} added successfully.'}
 
 
 @handle_errors
-async def update_workout(workout_id:int, workout_data: dict, user_id: int, db: AsyncSession):
+async def update_workout(workout_id: int, workout_data: dict, user_id: int, db: AsyncSession):
     """
     Function to update a workout in the "workouts" table.
 
     Returns:
-        The updated_workout info.
+        The success message with the updated workout id.
     """
     query = sa.select(Workout).where(Workout.id == workout_id)
     result = await db.execute(query)
@@ -71,8 +70,7 @@ async def update_workout(workout_id:int, workout_data: dict, user_id: int, db: A
         raise HTTPException(status_code=400, detail='Invalid workout type or invalid data provided.')
 
     return {'status': 'success',
-            'message': f'Workout {workout_id} updated successfully.',
-            'data': workout_id}
+            'message': f'Workout {workout_id} updated successfully.'}
 
 
 @handle_errors
@@ -81,7 +79,7 @@ async def get_workouts(db: AsyncSession, user_id: int):
     Function to get all workouts from the "workouts" table.
 
     Returns:
-        The list of workouts.
+        The list of workouts (Without exercises).
     """
     query = sa.select(Workout).where(Workout.user_id == user_id)
     result = await db.execute(query)
@@ -107,10 +105,10 @@ async def get_workouts(db: AsyncSession, user_id: int):
 @handle_errors
 async def get_workout(db: AsyncSession, workout_id: int, user_id: int):
     """
-    Function to get all workouts with exercises from the "workouts" table.
+    Function to get a specific workout with exercises from the "workouts" table.
 
     Returns:
-        The list of workouts with exercises.
+        The workout info with exercises.
     """
     query = (
         sa.select(Workout)
@@ -156,7 +154,7 @@ async def delete_workout(db: AsyncSession, workout_id: int, user_id: int):
     Function to delete a workout from the "workouts" table.
 
     Returns:
-        The deleted_workout info.
+        The success message with the deleted workout id.
     """
     query = sa.select(Workout).where(Workout.id == workout_id)
     result = await db.execute(query)
@@ -172,4 +170,4 @@ async def delete_workout(db: AsyncSession, workout_id: int, user_id: int):
     await db.execute(delete_query)
     await db.commit()
     return {'status': 'success',
-            'message': f'Workout {workout_id} deleted successfully.' }
+            'message': f'Workout {workout_id} deleted successfully.'}

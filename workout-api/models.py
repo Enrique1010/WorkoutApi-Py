@@ -33,7 +33,8 @@ class User(Base):
     created_at: Mapped[int] = mapped_column(Integer, nullable=False)
 
     def __repr__(self):
-        return f"User(name={self.name!r}, age={self.age!r}) email={self.email!r}) created_at={self.created_at!r})"
+        return (f"User(id={self.id}, name={self.name!r}, age={self.age!r}, username={self.username}, \
+                email={self.email!r}, created_at={self.created_at!r})")
 
 
 class Workout(Base):
@@ -53,7 +54,9 @@ class Workout(Base):
     exercises: Mapped[list["Exercise"]] = relationship(back_populates="workout", lazy="selectin")
 
     def __repr__(self):
-        return f"Workout(user_id={self.user_id!r}, workout_type={self.workout_type!r}) duration={self.duration!r}) calories={self.calories!r}) created_at={self.created_at!r})"
+        return (f"Workout(id={self.id}, user_id={self.user_id!r}, workout_type={self.workout_type!r},  \
+                duration={self.duration!r}, calories={self.calories!r}, created_at={self.created_at!r},  \
+                is_schedule={self.is_schedule}, schedule_date={self.schedule_date!r})")
 
 
 class Exercise(Base):
@@ -73,7 +76,9 @@ class Exercise(Base):
     workout: Mapped["Workout"] = relationship(back_populates="exercises")
 
     def __repr__(self):
-        return f"Exercise(name={self.name!r}, exercise_type={self.exercise_type!r}) duration={self.duration!r}) calories={self.calories!r}) created_at={self.created_at!r})"
+        return (f"Exercise(id={self.id}, name={self.name!r}, exercise_type={self.exercise_type!r},  \
+                duration={self.duration!r}, calories={self.calories!r}, created_at={self.created_at!r}, \
+                workout_id={self.workout_id!r})")
 
 
 class TrackingData(Base):
@@ -88,14 +93,16 @@ class TrackingData(Base):
     duration: Mapped[int] = mapped_column(Integer, nullable=False)
     is_new_set: Mapped[bool] = mapped_column(Boolean, insert_default=True)
     is_new_record: Mapped[bool] = mapped_column(Boolean, insert_default=False)
-    distance_covered: Mapped[int] = mapped_column(Integer) # if applicable
+    distance_covered: Mapped[int] = mapped_column(Integer)  # if applicable
     created_at: Mapped[int] = mapped_column(Integer)
     last_updated_at: Mapped[int] = mapped_column(Integer)
 
-    route: Mapped[list["MapPoint"]] = relationship(back_populates="tracking_data") # if applicable
+    route: Mapped[list["MapPoint"]] = relationship(back_populates="tracking_data")  # if applicable
 
     def __repr__(self):
-        return f"TrackingData(user_id={self.user_id!r}, exercise_id={self.exercise_id!r}) created_at={self.created_at!r})"
+        return (f"TrackingData(id={self.id!r}, description={self.description!r}) exercise_id={self.exercise_id!r}, \
+                is_new_set={self.is_new_set}, is_new_record={self.is_new_record}, duration={self.duration!r}, \
+                 distance_covered={self.distance_covered}, created_at={self.created_at!r})")
 
 
 class MapPoint(Base):
@@ -114,4 +121,4 @@ class MapPoint(Base):
     tracking_data: Mapped["TrackingData"] = relationship(back_populates="route")
 
     def __repr__(self):
-        return f"MapPoint(id={self.id!r}, created_at={self.created_at!r})"
+        return f"MapPoint(id={self.id!r}, lat={self.lat!r}, lon={self.lon!r}, created_at={self.created_at!r})"

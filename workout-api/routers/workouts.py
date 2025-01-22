@@ -46,7 +46,7 @@ async def update(workout_data: UpdateWorkoutDTO, db: AsyncSession = Depends(get_
         workout_data:
         db:
 
-    Returns: The updated workout info.
+    Returns: The updated workout id.
     """
     workout_data_dump = workout_data.model_dump(exclude_unset=True)
     return await update_workout(workout_data=workout_data_dump, user_id=user_id, db=db)
@@ -56,7 +56,11 @@ async def update(workout_data: UpdateWorkoutDTO, db: AsyncSession = Depends(get_
 async def get(db: AsyncSession = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """
     Function to get all workouts.
-    Returns: All workouts.
+    Args:
+        user_id:
+        db
+
+    Returns: workout list.
     """
     workout_results = await get_workouts(db=db, user_id=user_id)
     return workout_results
@@ -71,7 +75,7 @@ async def get(workout_id: int, db: AsyncSession = Depends(get_db), user_id: int 
         workout_id:
         db:
 
-    Returns: The workout info.
+    Returns: The specified workout info.
     """
     workout = await get_workout(db=db, workout_id=workout_id, user_id=user_id)
     return workout
@@ -86,6 +90,6 @@ async def delete(workout_id: int, db: AsyncSession = Depends(get_db), user_id: i
         user_id:
         db:
 
-    Returns: The deleted workout info.
+    Returns: The deleted workout id.
     """
     return await delete_workout(workout_id=workout_id, user_id=user_id, db=db)

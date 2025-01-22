@@ -1,20 +1,13 @@
-from pydantic import BaseModel
 from typing import Optional
 
-class ApiResponse(BaseModel):
-    status: bool
-    message: str
-    data: dict
+from pydantic import BaseModel
+
 
 class CreatedResponse(BaseModel):
     status: bool
     message: str
     data: int
 
-class ApiErrorResponse(BaseModel):
-    status: bool
-    message: str
-    error: str
 
 class AccessToken(BaseModel):
     """

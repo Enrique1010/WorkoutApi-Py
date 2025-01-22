@@ -1,6 +1,6 @@
 """
 users.py
-Module to handle all CRUD operations related
+Module to handle all operations related
 to the users endpoints.
 """
 import sqlalchemy as sa

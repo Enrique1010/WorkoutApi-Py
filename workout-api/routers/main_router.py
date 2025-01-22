@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+
 from routers import auth, users, workouts, exercises
 
 main_router_v1 = APIRouter()

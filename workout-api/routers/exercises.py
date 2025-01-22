@@ -61,7 +61,7 @@ async def get(db: AsyncSession = Depends(get_db), user_id: int = Depends(get_cur
               workout_id: int = None):
     """
     Function to get all exercises.
-    Returns: All exercises.
+    Returns: List of exercises.
     """
     exercises = await get_exercises(db=db, user_id=user_id, workout_id=workout_id)
     return exercises
@@ -92,7 +92,7 @@ async def delete(exercise_id: int, db: AsyncSession = Depends(get_db),
         db:
         user_id:
 
-    Returns: The deleted exercise info.
+    Returns: The deleted exercise id.
     """
     return await delete_exercise(db=db, user_id=user_id, exercise_id=exercise_id)
 
@@ -113,7 +113,7 @@ async def post_tracking(tracking_data: CreateTrackingRoomDTO, exercise_id: int, 
         db:
         user_id:
 
-    Returns: The new exercise tracking info.
+    Returns: The new exercise tracking id.
 
     """
     tracking_data_dump = tracking_data.model_dump()
@@ -131,7 +131,7 @@ async def get_tracking(exercise_id: int, db: AsyncSession = Depends(get_db),
         db:
         user_id:
 
-    Returns: All exercise tracking.
+    Returns: List of exercise tracking data.
 
     """
     return await get_exercise_tracking_data_list(db=db, user_id=user_id, exercise_id=exercise_id)
@@ -141,7 +141,7 @@ async def get_tracking(exercise_id: int, db: AsyncSession = Depends(get_db),
 @router.websocket("/ws/tracking/{tracking_data_id}")
 async def start_tracking(websocket: WebSocket, tracking_data_id: int, db: AsyncSession = Depends(get_db)):
     """
-    Function to start the tracking of an exercise.
+    Function to start the tracking of an exercise using websockets if the tracking room exists (or if needed).
     Args:
         tracking_data_id:
         websocket:

@@ -3,10 +3,11 @@ users.py
 Routes are configured for the users endpoints.
 """
 from fastapi import APIRouter, Depends
-from repository.users import create_new_user, update_user, get_user
+
 from dtos import CreateUserDTO, UpdateUserDTO, GetUserDTO
-from schemas import CreatedResponse
+from repository.users import create_new_user, update_user, get_user
 from routers.utils import get_db, AsyncSession
+from schemas import CreatedResponse
 
 router = APIRouter()
 

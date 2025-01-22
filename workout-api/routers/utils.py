@@ -3,7 +3,9 @@ utils.py
 DB function to get sessions instances.
 """
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from db_context import async_session
+
 
 async def get_db() -> AsyncSession:
     """

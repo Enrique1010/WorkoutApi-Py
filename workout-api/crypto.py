@@ -4,6 +4,7 @@ Module with support functions for crypt operations
 """
 import random
 import string
+
 import bcrypt
 
 

@@ -3,8 +3,8 @@ from datetime import datetime
 from functools import wraps
 
 from fastapi import HTTPException
-from sqlalchemy.exc import SQLAlchemyError
 from fastapi.websockets import WebSocket
+from sqlalchemy.exc import SQLAlchemyError
 
 
 def get_current_time():

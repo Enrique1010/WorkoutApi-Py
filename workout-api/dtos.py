@@ -1,5 +1,5 @@
-from typing import Optional, Union
-from pydantic import BaseModel, field_validator, ConfigDict
+from typing import Optional
+from pydantic import BaseModel, field_validator
 from crypto import hash_password
 
 
@@ -100,30 +100,3 @@ class CreateTrackingRoomDTO(TrackingBase):
     exercise_id: int
     duration: int
     description: str
-
-
-class UpdateTrackingRoomDTO(TrackingBase):
-    duration: int | None = None
-    description: str | None = None
-
-
-class UpdateTrackingDataDTO(TrackingBase):
-    duration: int | None = None
-    is_new_set: bool | None = None
-    is_new_record: bool | None = None
-    distance_covered: int | None = None
-
-class MapPointBase(BaseModel):
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-
-
-class CreateMapPointDTO(MapPointBase):
-    latitude: float
-    longitude: float
-
-
-class UpdateMapPointDTO(MapPointBase):
-    latitude: float | None = None
-    longitude: float | None = None
-    update_tracking_data: bool | None = False # from the client side, if the user wants to update every x seconds

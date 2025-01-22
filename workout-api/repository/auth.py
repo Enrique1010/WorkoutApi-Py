@@ -14,7 +14,8 @@ from settings import SECRET_KEY
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/v1/login')
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 2160 # 1.5 days
+ACCESS_TOKEN_EXPIRE_MINUTES = 2160  # 1.5 days
+
 
 def create_access_token(data: dict):
     """

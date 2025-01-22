@@ -1,6 +1,6 @@
 """
 repository.py
-Module to handle all CRUD operations related
+Module to handle all operations related
 to the exercise and exercise tracking data endpoints.
 """
 import sqlalchemy as sa
@@ -13,12 +13,10 @@ from repository.utils import handle_errors, get_current_time
 
 ERROR_401 = 'You are not authorized to perform this action.'
 
+
 async def verify_if_user_is_valid(user_id: int, workout_id: int, db: AsyncSession):
     """
-    Function to verify the user_id of the exercise.
-
-    Returns:
-        The user_id of the exercise.
+    Function to verify the user_id of the exercise. Also, it verifies if the workout exists.
     """
 
     workout_query = sa.select(Workout).where(Workout.id == workout_id)
@@ -34,10 +32,10 @@ async def verify_if_user_is_valid(user_id: int, workout_id: int, db: AsyncSessio
 
 async def verify_if_exercise_exists(exercise_id: int, db: AsyncSession):
     """
-    Function to verify if the exercise exists.
+    Function to verify if the exercise exists. If it exists, it returns the related workout id.
 
     Returns:
-        The exercise info.
+        The exercise workout_id.
     """
     query = sa.select(Exercise).where(Exercise.id == exercise_id)
     result = await db.execute(query)
@@ -47,28 +45,13 @@ async def verify_if_exercise_exists(exercise_id: int, db: AsyncSession):
     return exercise.workout_id
 
 
-async def get_user_id_by_exercise_id(exercise_id: int, db: AsyncSession):
-    """
-    Function to get the user_id by exercise_id.
-
-    Returns:
-        The user_id of the exercise.
-    """
-    query = sa.select(Exercise).where(Exercise.id == exercise_id)
-    result = await db.execute(query)
-    exercise = result.scalar()
-    if not exercise:
-        raise HTTPException(status_code=404, detail='Exercise not found.')
-    return exercise.workout.user_id
-
-
 @handle_errors
 async def create_new_exercise(exercise_data: dict, user_id: int, db: AsyncSession):
     """
     Function to add a new exercise into the "exercise" table.
 
     Returns:
-        The new_exercise info.
+        response message with the new exercise id.
     """
     # compare workout user_id with the current user_id
     workout_id = exercise_data['workout_id']
@@ -96,7 +79,7 @@ async def update_exercise(exercise_id: int, exercise_data: dict, user_id: int, d
     Function to update an exercise in the "exercise" table.
 
     Returns:
-        Success message.
+        Success message with the updated exercise id.
     """
     query = sa.select(Exercise).where(Exercise.id == exercise_id)
     result = await db.execute(query)
@@ -158,13 +141,14 @@ async def get_exercise(db: AsyncSession, user_id: int, exercise_id: int):
         'data': exercise
     }
 
+
 @handle_errors
 async def delete_exercise(db: AsyncSession, user_id: int, exercise_id: int):
     """
     Function to delete an exercise from the "exercise" table.
 
     Returns:
-        The deleted exercise info.
+        Success message with the deleted exercise id.
     """
     query = sa.select(Exercise).where(Exercise.id == exercise_id)
     result = await db.execute(query)
@@ -188,7 +172,7 @@ async def create_exercise_tracking_data_room(db: AsyncSession, user_id: int, exe
     Function to create a new exercise tracking data room in the "tracking_data" table.
 
     Returns:
-        The new tracking_data info.
+        Success message with the new tracking data id.
     """
     workout_id = await verify_if_exercise_exists(exercise_id, db)
 
@@ -251,10 +235,10 @@ async def get_exercise_tracking_data_list(db: AsyncSession, user_id: int, exerci
 @handle_errors
 async def verify_if_tracking_room_exists(db: AsyncSession, user_id: int, tracking_data_id: int):
     """
-    Function to verify if the tracking room exists.
+    Function to verify if the tracking room exists. If it exists, it returns True.
 
     Returns:
-        The tracking room info.
+        The tracking room existence.
     """
     query = sa.select(TrackingData).where(TrackingData.id == tracking_data_id)
     result = await db.execute(query)
@@ -279,6 +263,7 @@ async def verify_if_tracking_room_exists(db: AsyncSession, user_id: int, trackin
 async def get_exercise_tracking_data_updates(db: AsyncSession, tracking_data_id: int):
     """
     Function to get an exercise tracking data from the "tracking_data" table.
+    This function also returns the related map points.
 
     Returns:
         The tracking_data info.
@@ -319,9 +304,10 @@ async def get_exercise_tracking_data_updates(db: AsyncSession, tracking_data_id:
 async def create_map_point(db: AsyncSession, tracking_data_id: int, map_point: dict):
     """
     Function to create a new map point in the "map_point" table.
+    This function is meant to be used for the tracking data (location) updates.
 
     Returns:
-        The new map_point info.
+        Success message with the new map point id and map point id as data.
     """
     map_point.update({"tracking_data_id": tracking_data_id})
     map_point.update({"created_at": get_current_time()})
@@ -337,16 +323,17 @@ async def create_map_point(db: AsyncSession, tracking_data_id: int, map_point: d
 
     return {'status': 'success',
             'message': f'Map point {map_point_id} added successfully.',
-            'data': map_point_id }
+            'data': map_point_id}
 
 
 @handle_errors
 async def update_exercise_tracking_data(db: AsyncSession, tracking_data_id: int, tracking_data: dict):
     """
     Function to update an exercise tracking data in the "tracking_data" table.
+    This function is meant to be used to send tracking data updates if needed.
 
     Returns:
-        The updated tracking_data info.
+        Success message with the updated tracking data id.
     """
     query = sa.select(TrackingData).where(TrackingData.id == tracking_data_id)
     result = await db.execute(query)
@@ -360,5 +347,4 @@ async def update_exercise_tracking_data(db: AsyncSession, tracking_data_id: int,
     await db.commit()
 
     return {'status': True,
-            'message': f'Tracking data {tracking_data_id} updated successfully.' }
-
+            'message': f'Tracking data {tracking_data_id} updated successfully.'}
