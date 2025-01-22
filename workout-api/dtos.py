@@ -47,3 +47,20 @@ class CreateWorkoutDTO(WorkoutBase):
 
 class UpdateWorkoutDTO(WorkoutBase):
     pass
+
+
+class ExerciseBase(BaseModel):
+    name: Optional[str] = None
+    exercise_type: Optional[str] = None
+    duration: Optional[int] = None
+    calories: Optional[int] = None
+
+
+class CreateExerciseDTO(ExerciseBase):
+    name: str
+    exercise_type: str
+    duration: int
+    calories: int
+
+class UpdateExerciseDTO(ExerciseBase):
+    pass
