@@ -5,12 +5,13 @@ to the users endpoints.
 """
 import sqlalchemy as sa
 from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from repository.auth import create_access_token
 from crypto import verify_password
 from dtos import UpdateUserDTO
 from models import User
+from repository.auth import create_access_token
 from repository.utils import handle_errors, get_current_time
 
 ERROR_401 = 'You are not authorized to perform this action.'
@@ -19,7 +20,7 @@ ERROR_409 = 'That username or email is already in use.'
 
 
 @handle_errors
-async def crud_create_new_user(user_data: dict, db: AsyncSession):
+async def create_new_user(user_data: dict, db: AsyncSession):
     """
     Function to add a new user into the "users" table.
 
@@ -36,9 +37,13 @@ async def crud_create_new_user(user_data: dict, db: AsyncSession):
     if user_exists:
         raise HTTPException(status_code=409, detail=ERROR_409)
 
-    db.add(new_user)
-    await db.commit()
-    await db.refresh(new_user)
+    try:
+        db.add(new_user)
+        await db.commit()
+        await db.refresh(new_user)
+    except IntegrityError:
+        raise HTTPException(status_code=409, detail=ERROR_409)
+
     return new_user
 
 

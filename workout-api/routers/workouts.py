@@ -35,23 +35,24 @@ async def post(workout_data: CreateWorkoutDTO, db: AsyncSession = Depends(get_db
     return await create_new_workout(workout_data=workout_data_dump, user_id=user_id, db=db)
 
 
-@router.put("/update")
+@router.patch("/{workout_id}", status_code=200)
 async def update(workout_data: UpdateWorkoutDTO, db: AsyncSession = Depends(get_db),
-                 user_id: int = Depends(get_current_user_id)):
+                 user_id: int = Depends(get_current_user_id), workout_id: int = None):
     """
     Function to update a workout.
     Args:
+        workout_id:
         user_id:
         workout_data:
         db:
 
     Returns: The updated workout info.
     """
-    workout_data_dump = workout_data.model_dump()
-    return await update_workout(workout_data_dump, user_id, db)
+    workout_data_dump = workout_data.model_dump(exclude_unset=True)
+    return await update_workout(workout_data=workout_data_dump, user_id=user_id, db=db)
 
 
-@router.get("/")
+@router.get("/", status_code=200)
 async def get(db: AsyncSession = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """
     Function to get all workouts.
@@ -61,7 +62,7 @@ async def get(db: AsyncSession = Depends(get_db), user_id: int = Depends(get_cur
     return workout_results
 
 
-@router.get("/{workout_id}")
+@router.get("/{workout_id}", status_code=200)
 async def get(workout_id: int, db: AsyncSession = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """
     Function to get a workout.
@@ -76,7 +77,7 @@ async def get(workout_id: int, db: AsyncSession = Depends(get_db), user_id: int 
     return workout
 
 
-@router.delete("/{workout_id}")
+@router.delete("/{workout_id}", status_code=200)
 async def delete(workout_id: int, db: AsyncSession = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """
     Function to delete a workout.

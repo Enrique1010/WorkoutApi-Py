@@ -34,23 +34,24 @@ async def post(exercise_data: CreateExerciseDTO, db: AsyncSession = Depends(get_
     return await create_new_exercise(exercise_data=exercise_data_dump, user_id=user_id, db=db)
 
 
-@router.put("/update")
+@router.patch("/{exercise_id}", status_code=200)
 async def update(exercise_data: UpdateExerciseDTO, db: AsyncSession = Depends(get_db),
-                user_id: int = Depends(get_current_user_id)):
+                user_id: int = Depends(get_current_user_id), exercise_id: int = None):
     """
     Function to update an exercise.
     Args:
+        exercise_id:
         user_id:
         exercise_data:
         db:
 
     Returns: The updated exercise info.
     """
-    exercise_data_dump = exercise_data.model_dump()
-    return await update_exercise(exercise_data_dump, user_id, db)
+    exercise_data_dump = exercise_data.model_dump(exclude_unset=True)
+    return await update_exercise(exercise_data=exercise_data_dump, exercise_id=exercise_id, user_id=user_id, db=db)
 
 
-@router.get("/")
+@router.get("/list/{workout_id}", status_code=200)
 async def get(db: AsyncSession = Depends(get_db), user_id: int = Depends(get_current_user_id),
               workout_id: int = None):
     """
@@ -61,7 +62,7 @@ async def get(db: AsyncSession = Depends(get_db), user_id: int = Depends(get_cur
     return exercises
 
 
-@router.get("/{exercise_id}")
+@router.get("/{exercise_id}", status_code=200)
 async def get(exercise_id: int, db: AsyncSession = Depends(get_db), user_id: int = Depends(get_current_user_id)):
     """
     Function to get an exercise.
@@ -76,7 +77,7 @@ async def get(exercise_id: int, db: AsyncSession = Depends(get_db), user_id: int
     return exercise
 
 
-@router.delete("/{exercise_id}")
+@router.delete("/{exercise_id}", status_code=200)
 async def delete(exercise_id: int, db: AsyncSession = Depends(get_db),
                  user_id: int = Depends(get_current_user_id)):
     """

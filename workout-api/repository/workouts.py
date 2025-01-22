@@ -5,6 +5,7 @@ to the workout endpoints.
 """
 import sqlalchemy as sa
 from fastapi import HTTPException
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -31,24 +32,27 @@ async def create_new_workout(workout_data: dict, user_id: int, db: AsyncSession)
 
     db.add(new_workout)
     query = sa.select(Workout.id).order_by(Workout.id.desc()).limit(1)
-    result = await db.execute(query)
-    workout_id = result.scalar()
-    await db.commit()
+
+    try:
+        result = await db.execute(query)
+        workout_id = result.scalar()
+        await db.commit()
+    except DBAPIError:
+        raise HTTPException(status_code=400, detail='Invalid workout type or invalid data provided.')
+
     return {'status': 'success',
             'message': f'Workout {workout_id} added successfully.',
             'data': workout_id}
 
 
 @handle_errors
-async def update_workout(workout_data: dict, user_id: int, db: AsyncSession):
+async def update_workout(workout_id:int, workout_data: dict, user_id: int, db: AsyncSession):
     """
     Function to update a workout in the "workouts" table.
 
     Returns:
         The updated_workout info.
     """
-    workout_data.update({"user_id": user_id})
-    workout_id = workout_data.get('id')
     query = sa.select(Workout).where(Workout.id == workout_id)
     result = await db.execute(query)
     existing_workout = result.scalar()
@@ -56,10 +60,16 @@ async def update_workout(workout_data: dict, user_id: int, db: AsyncSession):
     if not existing_workout:
         raise HTTPException(status_code=404, detail='Workout not found.')
 
-    update_query = sa.update(Workout).where(Workout.id == workout_id).values(**workout_data)
-    await db.execute(update_query)
+    if existing_workout.user_id != user_id:
+        raise HTTPException(status_code=401, detail=ERROR_401)
 
-    await db.commit()
+    try:
+        update_query = sa.update(Workout).where(Workout.id == workout_id).values(**workout_data)
+        await db.execute(update_query)
+        await db.commit()
+    except DBAPIError:
+        raise HTTPException(status_code=400, detail='Invalid workout type or invalid data provided.')
+
     return {'status': 'success',
             'message': f'Workout {workout_id} updated successfully.',
             'data': workout_id}

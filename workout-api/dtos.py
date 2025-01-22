@@ -46,10 +46,15 @@ class CreateWorkoutDTO(WorkoutBase):
 
 
 class UpdateWorkoutDTO(WorkoutBase):
-    pass
+    workout_type: str | None = None
+    duration: int | None = None
+    calories: int | None = None
+    is_schedule: bool | None = None
+    schedule_date: int | None = None
 
 
 class ExerciseBase(BaseModel):
+    workout_id: Optional[int] = None
     name: Optional[str] = None
     exercise_type: Optional[str] = None
     duration: Optional[int] = None
@@ -57,10 +62,15 @@ class ExerciseBase(BaseModel):
 
 
 class CreateExerciseDTO(ExerciseBase):
+    workout_id: int
     name: str
     exercise_type: str
     duration: int
     calories: int
 
+
 class UpdateExerciseDTO(ExerciseBase):
-    pass
+    name: str | None = None
+    exercise_type: str | None = None
+    duration: int | None = None
+    calories: int | None = None

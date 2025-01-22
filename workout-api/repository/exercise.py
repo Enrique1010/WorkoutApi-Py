@@ -20,18 +20,15 @@ async def verify_user_id(user_id: int, workout_id: int, db: AsyncSession):
     Returns:
         The user_id of the exercise.
     """
-    workout = sa.select(Workout).where(Workout.id == workout_id)
 
-    if not workout:
+    workout_query = sa.select(Workout).where(Workout.id == workout_id)
+    workout_result = await db.execute(workout_query)
+    retrieved_workout = workout_result.scalar()
+
+    if not retrieved_workout:
         raise HTTPException(status_code=404, detail='Workout related to this exercise/tracking not found.')
 
-    workout_query = sa.select(Workout.user_id).where(Workout.id == workout_id)
-    workout_result = await db.execute(workout_query)
-    retrieved_user_id = workout_result.scalar()
-    if not retrieved_user_id:
-        raise HTTPException(status_code=401, detail=ERROR_401)
-
-    if retrieved_user_id != user_id:
+    if retrieved_workout.user_id != user_id:
         raise HTTPException(status_code=401, detail=ERROR_401)
 
 
@@ -51,7 +48,7 @@ async def verify_if_exercise_exists(exercise_id: int, db: AsyncSession):
 
 
 @handle_errors
-async def create_new_exercise(exercise_data: dict, user_id: int, workout_id: int, db: AsyncSession):
+async def create_new_exercise(exercise_data: dict, user_id: int, db: AsyncSession):
     """
     Function to add a new exercise into the "exercise" table.
 
@@ -59,6 +56,7 @@ async def create_new_exercise(exercise_data: dict, user_id: int, workout_id: int
         The new_exercise info.
     """
     # compare workout user_id with the current user_id
+    workout_id = exercise_data['workout_id']
     await verify_user_id(user_id, workout_id, db)
 
     creation_date = get_current_time()
@@ -72,9 +70,9 @@ async def create_new_exercise(exercise_data: dict, user_id: int, workout_id: int
     result = await db.execute(query)
     exercise_id = result.scalar()
     await db.commit()
+
     return {'status': 'success',
-            'message': f'Task {exercise_id} added successfully.',
-            'data': exercise_id }
+            'message': f'Exercise {exercise_id} added successfully.'}
 
 
 @handle_errors
@@ -83,7 +81,7 @@ async def update_exercise(exercise_id: int, exercise_data: dict, user_id: int, d
     Function to update an exercise in the "exercise" table.
 
     Returns:
-        The updated_exercise info.
+        Success message.
     """
     query = sa.select(Exercise).where(Exercise.id == exercise_id)
     result = await db.execute(query)
@@ -94,13 +92,12 @@ async def update_exercise(exercise_id: int, exercise_data: dict, user_id: int, d
 
     await verify_user_id(user_id, exercise.workout_id, db)
 
-    for key, value in exercise_data.items():
-        setattr(exercise, key, value)
-
+    update_query = sa.update(Exercise).where(Exercise.id == exercise_id).values(**exercise_data)
+    await db.execute(update_query)
     await db.commit()
+
     return {'status': 'success',
-            'message': f'Exercise {exercise_id} updated successfully.',
-            'data': exercise_id }
+            'message': f'Exercise {exercise_id} updated successfully.'}
 
 
 @handle_errors
@@ -116,7 +113,11 @@ async def get_exercises(db: AsyncSession, user_id: int, workout_id: int):
     query = sa.select(Exercise).where(Exercise.workout_id == workout_id)
     result = await db.execute(query)
     exercises = result.scalars().all()
-    return exercises
+
+    return {
+        'status': 'success',
+        'data': exercises
+    }
 
 
 @handle_errors
@@ -137,7 +138,10 @@ async def get_exercise(db: AsyncSession, user_id: int, exercise_id: int):
 
     await verify_user_id(user_id, exercise.workout_id, db)
 
-    return exercise
+    return {
+        'status': 'success',
+        'data': exercise
+    }
 
 @handle_errors
 async def delete_exercise(db: AsyncSession, user_id: int, exercise_id: int):
@@ -149,17 +153,18 @@ async def delete_exercise(db: AsyncSession, user_id: int, exercise_id: int):
     """
     query = sa.select(Exercise).where(Exercise.id == exercise_id)
     result = await db.execute(query)
-    exercise = result.scalar()
+    exercise_to_delete = result.scalar()
 
-    if not exercise:
+    if not exercise_to_delete:
         raise HTTPException(status_code=404, detail='Exercise not found.')
 
-    await verify_user_id(user_id, exercise.workout_id, db)
+    await verify_user_id(user_id, exercise_to_delete.workout_id, db)
 
-    await db.delete(exercise)
+    await db.delete(exercise_to_delete)
     await db.commit()
+
     return {'status': 'success',
-            'message': f'Exercise {exercise_id} deleted successfully.'}
+            'message': f'Exercise with {exercise_id} deleted successfully.'}
 
 
 @handle_errors

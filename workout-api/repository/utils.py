@@ -23,7 +23,7 @@ def handle_errors(func):
         try:
             return await func(*args, db=db, **kwargs)
         except SQLAlchemyError as error:
-            logging.error("SQLAlchemyError occurred: %s", error, exc_info=True)
+            logging.error("Data base error has occurred: %s", error, exc_info=True)
             raise HTTPException(
                 status_code=500,
                 detail='An internal database-related error occurred. Please try again later.'
