@@ -4,8 +4,8 @@ from crypto import hash_password
 
 
 class UserBase(BaseModel):
-    name: Optional[str]
-    age: Optional[int]
+    name: Optional[str] = None
+    age: Optional[int] = None
     username: Optional[str] = None
     email: Optional[str] = None
     password: Optional[str] = None

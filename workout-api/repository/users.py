@@ -83,15 +83,23 @@ async def update_user(user_id: int, requester_id, user_data: UpdateUserDTO, db: 
 
     query_all = await db.execute(sa.select(User))
     existing = query_all.scalars().all()
+
+    if any(user_data.username == user.username for user in existing):
+        raise HTTPException(status_code=409, detail=ERROR_409)
+
     if any(user_data.email == user.email for user in existing):
         raise HTTPException(status_code=409, detail=ERROR_409)
 
+    if user_data.name is not None:
+        modified_user.name = user_data.name
     if user_data.username is not None:
         modified_user.username = user_data.username
     if user_data.email is not None:
         modified_user.email = user_data.email
     if user_data.password is not None:
         modified_user.password = user_data.password
+    if user_data.age is not None:
+        modified_user.age = user_data.age
 
     await db.commit()
     await db.refresh(modified_user)

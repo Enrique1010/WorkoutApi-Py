@@ -26,7 +26,7 @@ async def post(user: CreateUserDTO, db: AsyncSession = Depends(get_db)):
     return result
 
 
-@router.patch("/{user_id}", response_model=CreatedResponse)
+@router.put("/{user_id}", response_model=CreatedResponse)
 async def update(user_data: UpdateUserDTO, db: AsyncSession = Depends(get_db), user_id: int = None):
     """
     Endpoint to update a user.
@@ -34,10 +34,9 @@ async def update(user_data: UpdateUserDTO, db: AsyncSession = Depends(get_db), u
     Returns:
         The updated user info.
     """
-    user_data_dump = user_data.model_dump(exclude_unset=True)
-    updated_user = await update_user(user_data=user_data_dump, user_id=user_id, requester_id=user_id, db=db)
+    updated_user = await update_user(user_data=user_data, user_id=user_id, requester_id=user_id, db=db)
     result = CreatedResponse(status=True, message="User updated successfully.", data=updated_user.id)
-    return await result
+    return result
 
 
 @router.get("/{user_id}", response_model=GetUserDTO)
