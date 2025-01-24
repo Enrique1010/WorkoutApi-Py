@@ -49,7 +49,7 @@ async def update(workout_data: UpdateWorkoutDTO, db: AsyncSession = Depends(get_
     Returns: The updated workout id.
     """
     workout_data_dump = workout_data.model_dump(exclude_unset=True)
-    return await update_workout(workout_data=workout_data_dump, user_id=user_id, db=db)
+    return await update_workout(workout_id=workout_id, workout_data=workout_data_dump, user_id=user_id, db=db)
 
 
 @router.get("/", status_code=200)

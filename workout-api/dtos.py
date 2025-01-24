@@ -86,7 +86,6 @@ class UpdateExerciseDTO(ExerciseBase):
 
 class TrackingBase(BaseModel):
     id: Optional[int] = None
-    user_id: Optional[int] = None
     exercise_id: Optional[int] = None
     duration: Optional[int] = None
     description: Optional[str] = None
@@ -96,7 +95,5 @@ class TrackingBase(BaseModel):
 
 
 class CreateTrackingRoomDTO(TrackingBase):
-    user_id: int
-    exercise_id: int
     duration: int
     description: str
