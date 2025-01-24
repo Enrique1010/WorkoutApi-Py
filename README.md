@@ -52,7 +52,7 @@ To access to this service you need to create a websocket gateway like this: ws:/
         "lat": -69.77323424,
         "lon": 70.32342435
     },
-    "updated_tracking_data": {}
+    "updated_tracking_data": {} // you can see the creation model on swagger docs
 }
 ```
 - If any error ocurred the websocket connection is lost or you will see a json like this:
@@ -81,6 +81,23 @@ To run linter checks, follow these steps (inside workout-api folder)::
   poetry run pylint *.py **/*.py
   ```
 
-### Testing (TBD)
+### Testing
+
+pytest is used for running tests. To run the tests, follow these steps (in workout-api directory):
+
+1. **Install dependencies
+```bash
+poetry install --with dev
+```
+
+2. Run the tests (you can run all the tests)
+```bash
+poetry run pytest -v
+```
+
+Linter check (run this inside workout-api directory)
+```bash
+poetry run pylint *.py **/*.py
+```
 
 That's all folks!!
