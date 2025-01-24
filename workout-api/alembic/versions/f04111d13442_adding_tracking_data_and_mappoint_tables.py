@@ -30,7 +30,7 @@ def upgrade() -> None:
     sa.Column('distance_covered', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.Integer(), nullable=False),
     sa.Column('last_updated_at', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['exercise_id'], ['exercise.id'], ),
+    sa.ForeignKeyConstraint(['exercise_id'], ['exercise.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('map_point',
@@ -40,7 +40,7 @@ def upgrade() -> None:
     sa.Column('lon', sa.Float(), nullable=False),
     sa.Column('created_at', sa.Integer(), nullable=False),
     sa.Column('last_updated_at', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['tracking_data_id'], ['tracking_data.id'], ),
+    sa.ForeignKeyConstraint(['tracking_data_id'], ['tracking_data.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###

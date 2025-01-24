@@ -5,6 +5,8 @@ from functools import wraps
 from fastapi import HTTPException
 from fastapi.websockets import WebSocket
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import text
 
 
 def get_current_time():
@@ -43,6 +45,17 @@ def handle_errors(func):
             await db.close()
 
     return wrapper
+
+
+@handle_errors
+async def get_schema(db: AsyncSession):
+    """
+    Function to get the current database schema version.
+    """
+    query = text("SELECT version_num FROM alembic_version;")
+    result = await db.execute(query)
+    version = result.scalar()
+    return version
 
 
 class WebsocketTrackingHandler:

@@ -5,7 +5,7 @@ from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from models import Base
-from settings import connection_string
+from settings import connection_string, test_connection_string
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -71,8 +71,13 @@ async def run_migrations_online():
         future=True,
         poolclass=pool.NullPool,
     )
+    connectable_test = create_async_engine(
+        test_connection_string,
+        future=True,
+        poolclass=pool.NullPool,
+    )
 
-    for connectable in [connectable_main]:
+    for connectable in [connectable_main, connectable_test]:
         try:
             async with connectable.connect() as connection:
                 await connection.run_sync(do_run_migrations)

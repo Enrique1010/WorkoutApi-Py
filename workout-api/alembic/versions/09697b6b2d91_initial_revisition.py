@@ -43,7 +43,7 @@ def upgrade() -> None:
     sa.Column('created_at', sa.Integer(), nullable=False),
     sa.Column('is_schedule', sa.Boolean(), nullable=False),
     sa.Column('schedule_date', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('exercise',
@@ -54,7 +54,7 @@ def upgrade() -> None:
     sa.Column('calories', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.Integer(), nullable=False),
     sa.Column('workout_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['workout_id'], ['workout.id'], ),
+    sa.ForeignKeyConstraint(['workout_id'], ['workout.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###

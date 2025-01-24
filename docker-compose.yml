@@ -11,6 +11,19 @@ services:
         POSTGRES_USER: ${DB_USER}
         POSTGRES_DB: ${DATABASE}
 
+  test_db:
+      image: postgres:13-bullseye
+      restart: always
+      pull_policy: always
+      network_mode: "host"
+      volumes:
+        - test_pgdata:/var/lib/postgresql/data
+      environment:
+        POSTGRES_PASSWORD: ${TEST_DB_PASSWORD}
+        POSTGRES_USER: ${TEST_DB_USER}
+        POSTGRES_DB: ${TEST_DATABASE}
+        PGPORT: 5433
+
   app:
     build:
       context: .
@@ -19,3 +32,4 @@ services:
 
 volumes:
   pgdata:
+  test_pgdata:
