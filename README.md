@@ -72,7 +72,7 @@ To run linter checks, follow these steps (inside workout-api folder)::
    
   If not done in the previous step install dependencies locally:
   ```bash
-  poetry install
+  poetry install --with dev
   ```
 
 2. **Run `pylint`**
@@ -85,19 +85,14 @@ To run linter checks, follow these steps (inside workout-api folder)::
 
 pytest is used for running tests. To run the tests, follow these steps (in workout-api directory):
 
-1. **Install dependencies
+1. **Install dependencies**
 ```bash
 poetry install --with dev
 ```
 
-2. Run the tests (you can run all the tests)
+2. **Run the tests (you can run all the tests)**
 ```bash
 poetry run pytest -v
-```
-
-Linter check (run this inside workout-api directory)
-```bash
-poetry run pylint *.py **/*.py
 ```
 
 That's all folks!!
